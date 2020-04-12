@@ -1,8 +1,7 @@
 import React, {Component} from 'react';
 import {View, SafeAreaView} from 'react-native';
 import Login from './Login';
-import axios from 'axios';
-import {StreamChat} from 'stream-chat';
+import Chat from './Chat';
 
 class App extends Component {
   constructor(props) {
@@ -10,45 +9,25 @@ class App extends Component {
 
     this.state = {
       isAuthenticated: false,
-      currentUser: null,
     };
-
-    this.chatClient = new StreamChat('wyw7beuuwb2p');
+    this.chatClient = null;
   }
 
-  onLoginSuccessCallback = userID => {
-    return axios
-      .post('https://c1ebc8c3.ngrok.io/auth', {})
-      .then(res => {
-        if (res.data.status) {
-          this.chatClient.setUser(
-            {
-              id: userID,
-              username: userID,
-              image:
-                'https://stepupandlive.files.wordpress.com/2014/09/3d-animated-frog-image.jpg',
-            },
-            res.data.token
-          );
-          this.setState({
-            isAuthenticated: true,
-          });
-          return;
-        }
-      })
-      .catch(err => {
-        return err;
-      });
+  onLoginSuccessCallback = chatClient => {
+    this.chatClient = chatClient;
+    this.setState({
+      isAuthenticated: true,
+    });
   };
 
   render() {
     return (
       <SafeAreaView style={{flex: 1}}>
         <View style={{flex: 1}}>
-          {!this.state.isAuthenticated || this.state.currentUser === null ? (
-            <Login cb={userID => this.onLoginSuccessCallback(userID)} />
+          {this.state.isAuthenticated && this.chatClient !== null ? (
+            <Chat chatClient={this.chatClient} />
           ) : (
-            <View style={[{flex: 1}]} />
+            <Login cb={this.onLoginSuccessCallback} />
           )}
         </View>
       </SafeAreaView>

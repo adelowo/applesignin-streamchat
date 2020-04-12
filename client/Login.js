@@ -14,8 +14,15 @@ import appleAuth, {
   AppleAuthError,
   AppleAuthCredentialState,
 } from '@invertase/react-native-apple-authentication';
+import axios from 'axios';
+import {StreamChat} from 'stream-chat';
 
 export default class Login extends Component {
+  constructor(props) {
+    super(props);
+    this.chatClient = new StreamChat('wyw7beuuwb2p');
+  }
+
   onAppleButtonPress = async () => {
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
@@ -31,15 +38,32 @@ export default class Login extends Component {
         appleAuthRequestResponse.user
       );
 
-      console.log(credentialState);
       if (credentialState === AppleAuthCredentialState.AUTHORIZED) {
-        this.props
-          .cb()
-          .then()
+        console.log('User apple sign in auth authorized');
+        axios
+          .post('https://c1ebc8c3.ngrok.io/auth', {
+            username: appleAuthRequestResponse.user,
+          })
+          .then(res => {
+            console.log(res.data);
+            if (res.data.status) {
+              this.chatClient.setUser(
+                {
+                  id: res.data.username,
+                  username: res.data.username,
+                  image:
+                    'https://stepupandlive.files.wordpress.com/2014/09/3d-animated-frog-image.jpg',
+                },
+                res.data.token
+              );
+              this.props.cb(this.chatClient);
+            }
+          })
           .catch(err => {
-            Alert.alert('Auth', 'Could not load chat');
-            console.log(err);
+            Alert.alert('Auth', 'could not set up Stream chat');
+            console.log('Could not authenticate user.. ', err);
           });
+
         return;
       }
 
