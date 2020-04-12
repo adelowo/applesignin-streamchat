@@ -18,22 +18,32 @@ import appleAuth, {
 export default class Login extends Component {
   onAppleButtonPress = async () => {
     try {
-      const appleAuthResponse = await appleAuth.performRequest({
-        requestedScopes: [
-          AppleAuthRequestScope.FULL_NAME,
-          AppleAuthRequestScope.EMAIL,
-        ],
+      const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: AppleAuthRequestOperation.LOGIN,
+        requestedScopes: [
+          AppleAuthRequestScope.EMAIL,
+          AppleAuthRequestScope.FULL_NAME,
+        ],
       });
 
-      const credentialState = appleAuth.getCredentialStateForUser(
-        appleAuthResponse.user
+      // get current authentication state for user
+      const credentialState = await appleAuth.getCredentialStateForUser(
+        appleAuthRequestResponse.user
       );
 
+      console.log(credentialState);
       if (credentialState === AppleAuthCredentialState.AUTHORIZED) {
-        Alert.alert('Auth', 'Successful');
+        this.props
+          .cb()
+          .then()
+          .catch(err => {
+            Alert.alert('Auth', 'Could not load chat');
+            console.log(err);
+          });
         return;
       }
+
+      Alert.alert('Auth', 'Could not authenticate you');
     } catch (err) {
       if (err === AppleAuthError.CANCELED) {
         Alert.alert(
