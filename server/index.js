@@ -19,14 +19,16 @@ const channel = client.channel("messaging", "applesignin", {
 });
 
 app.post("/auth", async (req, res) => {
-  const username = req.body.username;
-  if (username === undefined || username === "") {
+  const user = req.body.username;
+  if (user === undefined || user === "") {
     res.status(400);
     res.json({
       status: false,
     });
     return;
   }
+
+  const username = user.split(".")[1];
 
   const token = client.createToken(username);
 
