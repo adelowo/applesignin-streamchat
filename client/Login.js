@@ -21,9 +21,16 @@ export default class Login extends Component {
   constructor(props) {
     super(props);
     this.chatClient = new StreamChat('wyw7beuuwb2p');
+    this.state = {
+      hideSigninButton: false,
+    };
   }
 
   onAppleButtonPress = async () => {
+    this.setState({
+      hideSigninButton: true,
+    });
+
     try {
       const appleAuthRequestResponse = await appleAuth.performRequest({
         requestedOperation: AppleAuthRequestOperation.LOGIN,
@@ -60,6 +67,10 @@ export default class Login extends Component {
             }
           })
           .catch(err => {
+            this.setState({
+              hideSigninButton: false,
+            });
+
             Alert.alert('Auth', 'could not set up Stream chat');
             console.log('Could not authenticate user.. ', err);
           });
@@ -70,6 +81,9 @@ export default class Login extends Component {
       Alert.alert('Auth', 'Could not authenticate you');
     } catch (err) {
       if (err === AppleAuthError.CANCELED) {
+        this.setState({
+          hideSigninButton: false,
+        });
         Alert.alert(
           'Authentication',
           'You canceled the authentication process'
@@ -104,20 +118,22 @@ export default class Login extends Component {
           />
         </View>
 
-        <TouchableOpacity>
+        <TouchableOpacity disabled={this.state.hideSigninButton}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>SIGN IN</Text>
           </View>
         </TouchableOpacity>
-        <AppleButton
-          buttonStyle={AppleButton.Style.WHITE}
-          buttonType={AppleButton.Type.SIGN_IN}
-          style={{
-            width: 160,
-            height: 45,
-          }}
-          onPress={() => this.onAppleButtonPress()}
-        />
+        {!this.state.hideSigninButton && (
+          <AppleButton
+            buttonStyle={AppleButton.Style.WHITE}
+            buttonType={AppleButton.Type.SIGN_IN}
+            style={{
+              width: 160,
+              height: 45,
+            }}
+            onPress={() => this.onAppleButtonPress()}
+          />
+        )}
       </View>
     );
   }
