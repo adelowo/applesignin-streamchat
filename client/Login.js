@@ -41,8 +41,9 @@ export default class Login extends Component {
       if (credentialState === AppleAuthCredentialState.AUTHORIZED) {
         console.log('User apple sign in auth authorized');
         axios
-          .post('https://c1ebc8c3.ngrok.io/auth', {
+          .post('https://36b0bb03.ngrok.io/auth', {
             username: appleAuthRequestResponse.user,
+            code: appleAuthRequestResponse.authorizationCode,
           })
           .then(res => {
             console.log(res.data);
